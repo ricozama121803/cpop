@@ -1,0 +1,13 @@
+#compdef cpop
+# zsh completion for cpop
+_arguments -s -S \
+  '(-m --markdown -j --json -p --pretty)'{-t,--table}'[copy as an aligned table]' \
+  '(-t --table -j --json -p --pretty)'{-m,--markdown}'[copy as a Markdown table]' \
+  '(-t --table -m --markdown -p --pretty)'{-j,--json}'[copy as JSON]' \
+  '(-t --table -m --markdown -j --json)'{-p,--pretty}'[pretty-print JSON, otherwise a table]' \
+  {-c,--code}'[wrap in a Markdown code fence]' \
+  {-r,--raw}'[keep ANSI colors in the copy]' \
+  {-q,--quiet}'[hide the banner]' \
+  '(- *)'{-h,--help}'[show help]' \
+  '(- *)'{-V,--version}'[show version]' \
+  '*::command:_normal'

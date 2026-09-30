@@ -1,0 +1,149 @@
+.TH CPOP 1 "September 2026" "cpop 1.1.0" "User Commands"
+.SH NAME
+cpop \- run a command and copy its output to the system clipboard
+.SH SYNOPSIS
+.B cpop
+[\fIFLAGS\fR]
+.I command
+[\fIargs\fR...]
+.br
+.B cpop
+.B \-h
+|
+.B \-V
+.SH DESCRIPTION
+.B cpop
+(copy output) runs
+.I command
+with the given arguments, shows its output on the terminal as usual, and copies the same output to the system clipboard.
+Standard output and standard error are captured together.
+ANSI color codes are removed from the copy unless
+.B \-r
+is given.
+The exit status of
+.I command
+is passed through unchanged, so
+.B cpop
+can be put in front of a command inside scripts and
+.B &&
+chains.
+.PP
+When the copy succeeds, a one-line banner is printed to standard error showing how many lines and bytes were copied and which format was used.
+If the command prints nothing, the clipboard is left untouched.
+.PP
+Shell pipelines and redirections are handled by the shell before
+.B cpop
+starts, so quote them and run them inside a shell:
+.PP
+.RS
+.nf
+cpop sh \-c 'ls | wc \-l'
+.fi
+.RE
+.SH FORMAT FLAGS
+These flags change only what is placed on the clipboard.
+The terminal always shows the command's raw output.
+Only one of
+.BR \-t ,
+.BR \-m ,
+.B \-j
+and
+.B \-p
+may be used at a time.
+They require
+.BR python3 (1).
+.TP
+.BR \-t ", " \-\-table
+Aligned, box-drawn table.
+.TP
+.BR \-m ", " \-\-markdown
+Markdown table, ready to paste into GitHub, Slack or Notion.
+.TP
+.BR \-j ", " \-\-json
+JSON.
+Tabular output becomes an array of objects keyed by the header row, other text becomes an array of lines, and output that is already JSON is pretty-printed.
+.TP
+.BR \-p ", " \-\-pretty
+Best guess: pretty-printed JSON if the output is JSON, otherwise a box-drawn table.
+.TP
+.BR \-c ", " \-\-code
+Wrap the copy in a Markdown code fence.
+May be combined with any of the flags above.
+.SH OTHER FLAGS
+.TP
+.BR \-r ", " \-\-raw
+Keep ANSI escape sequences in the copy.
+.TP
+.BR \-q ", " \-\-quiet
+Do not print the banner.
+.TP
+.BR \-h ", " \-\-help
+Print usage and exit.
+.TP
+.BR \-V ", " \-\-version
+Print the version and exit.
+.PP
+Short flags may be bundled, for example
+.BR "cpop \-mc df \-h" .
+Use
+.B \-\-
+to end flag parsing if the command name starts with a dash.
+Flags placed after
+.I command
+belong to that command.
+.SH TABLES
+Table formats split each line on whitespace.
+The column count is the most common word count among the data rows, extra words stay in the last column, and the first full-width line is the header.
+This suits
+.BR df (1),
+.BR ps (1),
+.B docker ps
+and similar tools.
+Commands without a header row, such as
+.BR "ls \-l" ,
+use their first row as the header, and columns that contain spaces are split.
+If the output is not tabular,
+.B cpop
+copies it unchanged and says so.
+.SH ENVIRONMENT
+.TP
+.B CPOP_QUIET
+If set and non-empty, behave as if
+.B \-q
+was given.
+.TP
+.B NO_COLOR
+If set, the banner is printed without colors.
+Colors are also off when standard error is not a terminal.
+.TP
+.BR WAYLAND_DISPLAY ", " DISPLAY
+Used to pick the clipboard backend that fits the current session.
+.TP
+.BR LC_ALL ", " LC_CTYPE ", " LANG
+On non-UTF-8 locales the banner and table borders use plain ASCII.
+.SH CLIPBOARD BACKENDS
+The first tool that fits the session is used:
+.BR wl\-copy ,
+.BR xclip ,
+.BR xsel ,
+.BR pbcopy ,
+.BR clip.exe .
+.SH EXIT STATUS
+The exit status of
+.IR command .
+.B cpop
+itself exits with 2 on a usage error, 127 if
+.I command
+or a required tool cannot be found, and 1 if the clipboard cannot be written.
+.SH EXAMPLES
+.nf
+cpop ls \-a
+cpop \-m df \-h
+cpop \-j ps aux
+cpop \-pc curl \-s https://api.github.com/zen
+cpop \-t sh \-c 'ls | head'
+.fi
+.SH SEE ALSO
+.BR xclip (1),
+.BR wl\-copy (1),
+.BR tee (1)
